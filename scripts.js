@@ -1,14 +1,11 @@
-// Simple form submission handling (No backend integration)
-document.getElementById('contact-form').addEventListener('submit', function(event) {
-    event.preventDefault(); // Prevent page reload
+// Show feature sections as they scroll into view
+const features = document.querySelectorAll('.feature');
 
-    const name = event.target.name.value;
-    const email = event.target.email.value;
-    const message = event.target.message.value;
-
-    // For now, just show an alert with the form data
-    alert(`Thank you, ${name}!\nWe will respond to ${email} soon.`);
-
-    // Optionally reset the form
-    event.target.reset();
+window.addEventListener('scroll', () => {
+    features.forEach(feature => {
+        const featurePosition = feature.getBoundingClientRect().top;
+        if (featurePosition < window.innerHeight / 1.5) {
+            feature.classList.add('visible');
+        }
+    });
 });
