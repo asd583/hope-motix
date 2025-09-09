@@ -1,4 +1,4 @@
-/* Global Styles */
+/* Global reset */
 * {
     margin: 0;
     padding: 0;
@@ -6,108 +6,169 @@
 }
 
 body {
-    font-family: 'Arial', sans-serif;
-    line-height: 1.6;
-    background-color: #f4f6f9;
+    font-family: Arial, sans-serif;
+    background-color: #f8f8f8;
+    color: #333;
 }
 
-/* Header Styles */
-.header {
+/* Navbar */
+header {
     background-color: #333;
     color: #fff;
-    padding: 1rem 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    padding: 20px 0;
+    text-align: center;
 }
 
-.header .logo {
-    font-size: 1.8rem;
-    font-weight: bold;
+header .logo h1 {
+    font-size: 30px;
 }
 
 header nav ul {
     list-style: none;
     display: flex;
+    justify-content: center;
+    margin-top: 15px;
 }
 
 header nav ul li {
-    margin: 0 1rem;
+    margin: 0 20px;
 }
 
 header nav ul li a {
-    color: #fff;
+    color: white;
     text-decoration: none;
-    font-weight: 600;
+    font-size: 18px;
+    text-transform: uppercase;
 }
 
 header nav ul li a:hover {
-    color: #f39c12;
+    border-bottom: 2px solid #ffcc00;
 }
 
 /* Hero Section */
 .hero {
-    background-color: #2d3e50;
-    color: #fff;
+    background: url('https://via.placeholder.com/1500x800') no-repeat center center/cover;
+    color: white;
     text-align: center;
-    padding: 4rem;
+    padding: 100px 20px;
 }
 
-.hero h1 {
-    font-size: 3rem;
-    margin-bottom: 1rem;
+.hero h2 {
+    font-size: 50px;
+    margin-bottom: 20px;
 }
 
 .hero p {
-    font-size: 1.2rem;
-    margin-bottom: 2rem;
+    font-size: 22px;
+    margin-bottom: 30px;
 }
 
-.get-started-btn {
-    padding: 1rem 3rem;
-    background-color: #f39c12;
+.cta-button {
+    background-color: #ffcc00;
+    color: #333;
+    padding: 20px 50px;
+    font-size: 20px;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.cta-button:hover {
+    background-color: #e6b800;
+}
+
+/* Transaction Section */
+.transactions {
+    padding: 60px 20px;
+    text-align: center;
+    background-color: white;
+}
+
+.transactions h2 {
+    font-size: 36px;
+    margin-bottom: 40px;
+}
+
+.transactions form {
+    max-width: 500px;
+    margin: 0 auto;
+    text-align: left;
+}
+
+.transactions input, .transactions textarea {
+    width: 100%;
+    padding: 15px;
+    margin: 15px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.transactions button {
+    background-color: #ffcc00;
+    color: #333;
+    padding: 15px 40px;
+    font-size: 18px;
     border: none;
-    font-size: 1.1rem;
-    color: white;
     cursor: pointer;
-    border-radius: 30px;
-    transition: 0.3s ease;
+    text-transform: uppercase;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
 }
 
-.get-started-btn:hover {
-    background-color: #e67e22;
+.transactions button:hover {
+    background-color: #e6b800;
 }
 
-/* Features Section */
-.features {
-    display: flex;
-    justify-content: space-around;
-    padding: 3rem;
+/* Contact Section */
+.contact {
+    padding: 60px 20px;
+    background-color: #f1f1f1;
     text-align: center;
 }
 
-.features .feature {
-    width: 30%;
-    background-color: #fff;
-    padding: 2rem;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+.contact h2 {
+    font-size: 36px;
+    margin-bottom: 40px;
 }
 
-.features .feature h2 {
-    margin-bottom: 1rem;
+.contact form {
+    max-width: 500px;
+    margin: 0 auto;
+    text-align: left;
+}
+
+.contact form input,
+.contact form textarea {
+    width: 100%;
+    padding: 15px;
+    margin: 15px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.contact form button {
+    background-color: #ffcc00;
     color: #333;
+    padding: 15px 40px;
+    font-size: 18px;
+    border: none;
+    cursor: pointer;
+    text-transform: uppercase;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
 }
 
-.features .feature p {
-    color: #777;
+.contact form button:hover {
+    background-color: #e6b800;
 }
 
 /* Footer */
 footer {
     background-color: #333;
-    color: #fff;
+    color: white;
     text-align: center;
-    padding: 1rem;
-    font-size: 0.9rem;
+    padding: 20px;
 }
