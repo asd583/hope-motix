@@ -1,31 +1,48 @@
-// Handle Transaction Request Form Submission
-document.getElementById('transaction-form').addEventListener('submit', function(event) {
-    event.preventDefault();
-
-    // Get the transaction details
-    const transactionType = document.getElementById('transaction-type').value;
-    const transactionAmount = document.getElementById('transaction-amount').value;
-    const transactionMessage = document.getElementById('transaction-message').value;
-
-    // Simulate a transaction request
-    alert(`Transaction Requested!\nType: ${transactionType}\nAmount: ${transactionAmount}\nMessage: ${transactionMessage}`);
-
-    // Optionally reset the form
-    event.target.reset();
+// Update price when an item is selected
+document.getElementById('item').addEventListener('change', function() {
+  const selectedItem = this.options[this.selectedIndex];
+  const price = selectedItem.getAttribute('data-price');
+  document.getElementById('priceDisplay').innerText = `Price: $${price}`;
 });
 
-// Handle Contact Form Submission
-document.getElementById('contact-form').addEventListener('submit', function(event) {
-    event.preventDefault();
+// Show KBZ Pay button if selected
+document.getElementById('payment_method').addEventListener('change', function() {
+  const paymentMethod = this.value;
+  if (paymentMethod === 'KBZ Pay') {
+    document.getElementById('kbz-pay-btn').style.display = 'block';
+  } else {
+    document.getElementById('kbz-pay-btn').style.display = 'none';
+  }
+});
 
-    // Get the contact details
-    const name = event.target.name.value;
-    const email = event.target.email.value;
-    const message = event.target.message.value;
+// Handle KBZ Pay Payment Logic
+document.getElementById('payWithKBZ').addEventListener('click', function() {
+  const formData = new FormData(document.getElementById('transferForm'));
 
-    // Simulate sending the contact message
-    alert(`Message Sent!\nName: ${name}\nEmail: ${email}\nMessage: ${message}`);
+  const paymentDetails = {
+    item: formData.get('item'),
+    sender_name: formData.get('sender_name'),
+    sender_phone: formData.get('sender_phone'),
+    id_last5: formData.get('id_last5'),
+    payment_method: 'KBZ Pay',
+  };
 
-    // Optionally reset the form
-    event.target.reset();
+  // Send to the backend for payment processing
+  fetch('/initiate-payment', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(paymentDetails),
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.redirect_url) {
+      window.location.href = data.redirect_url; // Redirect to KBZ Pay
+    } else {
+      alert('Payment initiation failed');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('An error occurred.');
+  });
 });
