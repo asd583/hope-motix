@@ -72,3 +72,24 @@ function sendConfirmationEmail(order) {
         }
     });
 }
+app.post('/order', (req, res) => {
+    const { productId, fullName, email, address } = req.body;
+
+    const newOrder = {
+        id: orders.length + 1,
+        productId,
+        fullName,
+        email,
+        address,
+        status: 'Pending',  // Example order status
+        productName: 'Item 1', // Add dynamically based on the product selected
+        price: 50, // Dynamically set the price
+    };
+
+    orders.push(newOrder);
+
+    // Send confirmation email
+    sendConfirmationEmail(newOrder);
+
+    res.json({ message: 'Order received successfully', order: newOrder });
+});
