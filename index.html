@@ -94,3 +94,52 @@
         window.location.href = `/checkout?productId=${product.id}`;
     });
 </script>
+<!-- Checkout Page -->
+<section id="checkout">
+    <h2>Complete Your Purchase</h2>
+    <p>You are about to purchase: <span id="checkout-product-name"></span></p>
+    <p>Price: $<span id="checkout-price"></span></p>
+
+    <div id="paypal-button-container"></div>
+</section>
+
+<script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&components=buttons"></script>
+
+<script>
+    // Retrieve product details from query string
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('productId');
+
+    // Example product data (in a real app, you would fetch this from the server)
+    const products = [
+        { id: 1, name: 'Item 1', price: 50 },
+        { id: 2, name: 'Item 2', price: 100 }
+    ];
+
+    // Find product based on productId
+    const product = products.find(p => p.id === parseInt(productId));
+
+    if (product) {
+        document.getElementById('checkout-product-name').textContent = product.name;
+        document.getElementById('checkout-price').textContent = product.price;
+
+        // Render PayPal button dynamically
+        paypal.Buttons({
+            createOrder: function (data, actions) {
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: {
+                            value: product.price
+                        }
+                    }]
+                });
+            },
+            onApprove: function (data, actions) {
+                return actions.order.capture().then(function (details) {
+                    alert('Transaction completed by ' + details.payer.name.given_name);
+                    // Notify the server about successful payment (e.g., update order status)
+                });
+            }
+        }).render('#paypal-button-container');
+    }
+        </script>
