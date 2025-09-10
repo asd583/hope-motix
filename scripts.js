@@ -58,3 +58,67 @@ app.post('/order', (req, res) => {
 
     res.json({ message: 'Order received successfully', order: newOrder });
 });
+app.post('/order', (req, res) => {
+    const { productId, fullName, email, phone, address, specialInstructions } = req.body;
+
+    const newOrder = {
+        id: orders.length + 1,
+        productId,
+        fullName,
+        email,
+        phone,
+        address,
+        specialInstructions,
+        status: 'Pending',
+        productName: 'Item 1',  // Adjust dynamically
+        price: 50,  // Adjust dynamically
+    };
+
+    orders.push(newOrder);
+
+    // Send confirmation email
+    sendConfirmationEmail(newOrder);
+
+    res.json({ message: 'Order received successfully', order: newOrder });
+});
+// Admin route to view all orders
+app.get('/admin/orders', (req, res) => {
+    res.json(orders); // Return all orders
+});
+paypal.Buttons({
+    createOrder: function (data, actions) {
+        return actions.order.create({
+            purchase_units: [{
+                amount: {
+                    value: product.price
+                }
+            }]
+        });
+    },
+    onApprove: function (data, actions) {
+        return actions.order.capture().then(function (details) {
+            alert('Transaction completed by ' + details.payer.name.given_name);
+
+            // Update order status to "Paid"
+            fetch('/update-order-status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ orderId: product.id, status: 'Paid' })
+            });
+        });
+    }
+}).render('#paypal-button-container');
+// Update order status after payment
+app.post('/update-order-status', (req, res) => {
+    const { orderId, status } = req.body;
+
+    const order = orders.find(o => o.id === orderId);
+    if (order) {
+        order.status = status;
+        res.json({ message: 'Order status updated successfully', order });
+    } else {
+        res.status(404).json({ message: 'Order not found' });
+    }
+});
