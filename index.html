@@ -1,257 +1,31 @@
-<!-- Homepage -->
-<section id="home">
-    <h2>Welcome to the Marketplace</h2>
-    <p>Browse and select an item you want to buy:</p>
-    <div id="product-list">
-        <!-- Products will be dynamically loaded here -->
-    </div>
-</section>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Website</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Welcome to [Your Business Name]</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="shop.html">Shop</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
 
-<script>
-    // Example list of products (You can load this from a server/database)
-    const products = [
-        { id: 1, name: 'Item 1', price: 50, description: 'This is a great item.' },
-        { id: 2, name: 'Item 2', price: 100, description: 'This item is awesome!' }
-    ];
+    <section id="hero">
+        <h2>Your One-Stop Shop for [Products/Services]</h2>
+        <p>Explore our amazing products and services. Shop now!</p>
+        <a href="shop.html" class="cta-button">Start Shopping</a>
+    </section>
 
-    // Dynamically display the products
-    const productList = document.getElementById('product-list');
-    products.forEach(product => {
-        const productDiv = document.createElement('div');
-        productDiv.classList.add('product');
-        productDiv.innerHTML = `
-            <h3>${product.name}</h3>
-            <p>Price: $${product.price}</p>
-            <p>${product.description}</p>
-            <button onclick="viewProduct(${product.id})">Buy Now</button>
-        `;
-        productList.appendChild(productDiv);
-    });
-
-    function viewProduct(productId) {
-        window.location.href = `/buy/${productId}`;
-    }
-</script>
-<!-- Product Purchase Form -->
-<section id="product-details">
-    <h2>Product Name</h2>
-    <p>Price: $<span id="product-price"></span></p>
-    <p>Description: <span id="product-description"></span></p>
-
-    <h3>Fill Out the Form Below to Complete Your Purchase</h3>
-    <form id="purchase-form">
-        <input type="hidden" id="product-id">
-        
-        <label for="full-name">Full Name</label>
-        <input type="text" id="full-name" name="full-name" required>
-
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" required>
-
-        <label for="address">Shipping Address</label>
-        <textarea id="address" name="address" required></textarea>
-
-        <button type="submit">Proceed to Payment</button>
-    </form>
-</section>
-
-<script>
-    // Assuming we are dynamically loading the product details from a server
-    const urlParams = new URLSearchParams(window.location.search);
-    const productId = urlParams.get('productId');
-
-    // Example products (you can get this data from a backend)
-    const products = [
-        { id: 1, name: 'Item 1', price: 50, description: 'This is a great item.' },
-        { id: 2, name: 'Item 2', price: 100, description: 'This item is awesome!' }
-    ];
-
-    // Find the selected product based on productId
-    const product = products.find(p => p.id === parseInt(productId));
-
-    if (product) {
-        document.getElementById('product-id').value = product.id;
-        document.getElementById('product-price').textContent = product.price;
-        document.getElementById('product-description').textContent = product.description;
-    }
-
-    // Handle form submission
-    document.getElementById('purchase-form').addEventListener('submit', function (event) {
-        event.preventDefault();
-
-        const formData = new FormData(this);
-        const orderDetails = {
-            productId: product.id,
-            fullName: formData.get('full-name'),
-            email: formData.get('email'),
-            address: formData.get('address')
-        };
-
-        // Send order details to the server (you can add server-side logic for storing orders)
-        console.log(orderDetails);
-
-        // After submission, redirect to the payment page
-        window.location.href = `/checkout?productId=${product.id}`;
-    });
-</script>
-<!-- Checkout Page -->
-<section id="checkout">
-    <h2>Complete Your Purchase</h2>
-    <p>You are about to purchase: <span id="checkout-product-name"></span></p>
-    <p>Price: $<span id="checkout-price"></span></p>
-
-    <div id="paypal-button-container"></div>
-</section>
-
-<script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&components=buttons"></script>
-
-<script>
-    // Retrieve product details from query string
-    const urlParams = new URLSearchParams(window.location.search);
-    const productId = urlParams.get('productId');
-
-    // Example product data (in a real app, you would fetch this from the server)
-    const products = [
-        { id: 1, name: 'Item 1', price: 50 },
-        { id: 2, name: 'Item 2', price: 100 }
-    ];
-
-    // Find product based on productId
-    const product = products.find(p => p.id === parseInt(productId));
-
-    if (product) {
-        document.getElementById('checkout-product-name').textContent = product.name;
-        document.getElementById('checkout-price').textContent = product.price;
-
-        // Render PayPal button dynamically
-        paypal.Buttons({
-            createOrder: function (data, actions) {
-                return actions.order.create({
-                    purchase_units: [{
-                        amount: {
-                            value: product.price
-                        }
-                    }]
-                });
-            },
-            onApprove: function (data, actions) {
-                return actions.order.capture().then(function (details) {
-                    alert('Transaction completed by ' + details.payer.name.given_name);
-                    // Notify the server about successful payment (e.g., update order status)
-                });
-            }
-        }).render('#paypal-button-container');
-    }
-        </script>
-<form id="purchase-form">
-    <input type="hidden" id="product-id">
-
-    <label for="full-name">Full Name</label>
-    <input type="text" id="full-name" name="full-name" required>
-
-    <label for="email">Email</label>
-    <input type="email" id="email" name="email" required>
-
-    <label for="phone">Phone Number</label>
-    <input type="text" id="phone" name="phone" required>
-
-    <label for="address">Shipping Address</label>
-    <textarea id="address" name="address" required></textarea>
-
-    <label for="special-instructions">Special Instructions</label>
-    <textarea id="special-instructions" name="special-instructions"></textarea>
-
-    <button type="submit">Proceed to Payment</button>
-</form>
-<form id="purchase-form">
-    <input type="hidden" id="product-id">
-
-    <label for="full-name">Full Name</label>
-    <input type="text" id="full-name" name="full-name" required>
-
-    <label for="email">Email</label>
-    <input type="email" id="email" name="email" required>
-
-    <label for="phone">Phone Number</label>
-    <input type="text" id="phone" name="phone" required>
-
-    <label for="address">Shipping Address</label>
-    <textarea id="address" name="address" required></textarea>
-
-    <label for="special-instructions">Special Instructions</label>
-    <textarea id="special-instructions" name="special-instructions"></textarea>
-
-    <button type="submit">Proceed to Payment</button>
-</form>
-<!-- Admin Panel -->
-<section id="admin-orders">
-    <h2>Admin - Manage Orders</h2>
-    <table id="orders-table">
-        <thead>
-            <tr>
-                <th>Order ID</th>
-                <th>Product</th>
-                <th>Customer Name</th>
-                <th>Email</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody id="orders-list">
-            <!-- Orders will be dynamically loaded here -->
-        </tbody>
-    </table>
-</section>
-
-<script>
-    // Fetch orders for the admin panel
-    fetch('/admin/orders')
-        .then(response => response.json())
-        .then(orders => {
-            const ordersList = document.getElementById('orders-list');
-            orders.forEach(order => {
-                const orderRow = document.createElement('tr');
-                orderRow.innerHTML = `
-                    <td>${order.id}</td>
-                    <td>${order.productName}</td>
-                    <td>${order.fullName}</td>
-                    <td>${order.email}</td>
-                    <td>${order.status}</td>
-                `;
-                ordersList.appendChild(orderRow);
-            });
-        });
-</script>
-
-<section id="order-history">
-    <h2>Your Order History</h2>
-    <table id="order-history-table">
-        <thead>
-            <tr>
-                <th>Order ID</th>
-                <th>Product</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody id="order-history-list">
-            <!-- Order history dynamically loaded here -->
-        </tbody>
-    </table>
-</section>
-
-<script>
-    // Fetch user order history (assuming we have an API for this)
-    fetch('/user/orders')
-        .then(response => response.json())
-        .then(orders => {
-            const orderHistoryList = document.getElementById('order-history-list');
-            orders.forEach(order => {
-                const orderRow = document.createElement('tr');
-                orderRow.innerHTML = `
-                    <td>${order.id}</td>
-                    <td>${order.productName}</td>
-                    <td>${order.status}</td>
-                `;
-                orderHistoryList.appendChild(orderRow);
-            });
-        });
-</script>
+    <footer>
+        <p>&copy; 2025 [Your Business Name]. All rights reserved.</p>
+    </footer>
+</body>
+</html>
