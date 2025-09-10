@@ -183,3 +183,75 @@
 
     <button type="submit">Proceed to Payment</button>
 </form>
+<!-- Admin Panel -->
+<section id="admin-orders">
+    <h2>Admin - Manage Orders</h2>
+    <table id="orders-table">
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Product</th>
+                <th>Customer Name</th>
+                <th>Email</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="orders-list">
+            <!-- Orders will be dynamically loaded here -->
+        </tbody>
+    </table>
+</section>
+
+<script>
+    // Fetch orders for the admin panel
+    fetch('/admin/orders')
+        .then(response => response.json())
+        .then(orders => {
+            const ordersList = document.getElementById('orders-list');
+            orders.forEach(order => {
+                const orderRow = document.createElement('tr');
+                orderRow.innerHTML = `
+                    <td>${order.id}</td>
+                    <td>${order.productName}</td>
+                    <td>${order.fullName}</td>
+                    <td>${order.email}</td>
+                    <td>${order.status}</td>
+                `;
+                ordersList.appendChild(orderRow);
+            });
+        });
+</script>
+
+<section id="order-history">
+    <h2>Your Order History</h2>
+    <table id="order-history-table">
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Product</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="order-history-list">
+            <!-- Order history dynamically loaded here -->
+        </tbody>
+    </table>
+</section>
+
+<script>
+    // Fetch user order history (assuming we have an API for this)
+    fetch('/user/orders')
+        .then(response => response.json())
+        .then(orders => {
+            const orderHistoryList = document.getElementById('order-history-list');
+            orders.forEach(order => {
+                const orderRow = document.createElement('tr');
+                orderRow.innerHTML = `
+                    <td>${order.id}</td>
+                    <td>${order.productName}</td>
+                    <td>${order.status}</td>
+                `;
+                orderHistoryList.appendChild(orderRow);
+            });
+        });
+</script>
