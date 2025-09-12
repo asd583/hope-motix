@@ -3,29 +3,334 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Business Website</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>PSK Services</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        setLogLevel('debug');
+        
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        let userId = null;
+        let isAuthReady = false;
+
+        async function initAuth() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined') {
+                    const userCredential = await signInWithCustomToken(auth, __initial_auth_token);
+                    userId = userCredential.user.uid;
+                } else {
+                    const userCredential = await signInAnonymously(auth);
+                    userId = userCredential.user.uid;
+                }
+                isAuthReady = true;
+            } catch (error) {
+                console.error("Firebase Auth Error:", error);
+                const authErrorContainer = document.getElementById('auth-error-message');
+                authErrorContainer.textContent = `Firebase authentication failed. Please check the console for details.`;
+                authErrorContainer.classList.remove('hidden');
+                isAuthReady = false;
+            }
+        }
+
+        async function saveTransaction(transactionData) {
+            if (!isAuthReady || !userId) {
+                console.error("Firebase is not authenticated yet. Please wait.");
+                const authErrorContainer = document.getElementById('auth-error-message');
+                authErrorContainer.textContent = "Please wait, Firebase authentication is in progress.";
+                authErrorContainer.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                const transactionId = new Date().toISOString();
+                const transactionRef = doc(db, `artifacts/${appId}/users/${userId}/motix_transactions`, transactionId);
+                await setDoc(transactionRef, transactionData);
+                console.log("Transaction saved successfully!");
+                document.getElementById('confirmation-message').classList.remove('hidden');
+            } catch (e) {
+                console.error("Error adding document: ", e);
+                const authErrorContainer = document.getElementById('auth-error-message');
+                authErrorContainer.textContent = `Error saving transaction: ${e.message}`;
+                authErrorContainer.classList.remove('hidden');
+            }
+        }
+        
+        window.saveTransaction = saveTransaction;
+        window.initAuth = initAuth;
+
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d0d0d;
+            color: #f1f1f1;
+        }
+        .page {
+            min-height: 100vh;
+        }
+        .active-page {
+            display: block;
+        }
+        .inactive-page {
+            display: none;
+        }
+        .text-motix {
+            color: #8cff4a;
+        }
+        .btn {
+            @apply px-6 py-3 rounded-full font-bold transition-all duration-200;
+        }
+    </style>
 </head>
-<body>
-    <header>
-        <h1>Welcome to [Your Business Name]</h1>
-        <nav>
-            <ul>
-                <li><a href="index.html">Home</a></li>
-                <li><a href="shop.html">Shop</a></li>
-                <li><a href="contact.html">Contact</a></li>
-            </ul>
-        </nav>
-    </header>
+<body class="bg-gray-900 text-white">
 
-    <section id="hero">
-        <h2>Your One-Stop Shop for [Products/Services]</h2>
-        <p>Explore our amazing products and services. Shop now!</p>
-        <a href="shop.html" class="cta-button">Start Shopping</a>
-    </section>
+<!-- Top Navigation -->
+<header class="fixed top-0 left-0 w-full z-10 p-4">
+    <nav class="flex justify-between items-center max-w-lg mx-auto">
+        <!-- Logo/Icon (Placeholder) -->
+        <div class="flex items-center space-x-2">
+            <svg class="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14v4m0 0a2 2 0 100-4h0a2 2 0 100 4zm0 0V6a2 2 0 100-4h0a2 2 0 100 4z" />
+            </svg>
+            <span class="text-xl font-bold">PSK Services</span>
+        </div>
+        <!-- Hamburger Menu -->
+        <button id="hamburger-menu" class="text-white focus:outline-none">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-4 6h4" />
+            </svg>
+        </button>
+    </nav>
+    <div id="nav-overlay" class="fixed inset-0 bg-black bg-opacity-90 hidden transition-opacity duration-300">
+        <div class="flex flex-col items-start p-8 space-y-4 text-xl">
+            <button id="close-menu" class="self-end text-white text-3xl">&times;</button>
+            <a href="#home" class="text-motix font-bold" onclick="showPage('home-page')">Home</a>
+            <a href="#services" class="text-white" onclick="showPage('services-page')">Services</a>
+            <a href="#references" class="text-white">References</a>
+            <a href="#booking" class="text-white" onclick="showPage('booking-page')">Booking</a>
+        </div>
+    </div>
+</header>
 
-    <footer>
-        <p>&copy; 2025 [Your Business Name]. All rights reserved.</p>
-    </footer>
-</body>
-</html>
+<main class="max-w-lg mx-auto py-24 px-4">
+    <!-- General Error Message Box -->
+    <div id="auth-error-message" class="hidden fixed bottom-4 left-1/2 -translate-x-1/2 bg-red-600 text-white p-4 rounded-lg shadow-lg z-50 text-center"></div>
+
+    <!-- Home Page -->
+    <div id="home-page" class="page active-page">
+        <div class="flex flex-col items-center text-center mt-12">
+            <h1 class="text-4xl sm:text-5xl font-extrabold mb-4 leading-tight">
+                <span class="text-motix">HOPE Motix</span> Pay to Pay Service
+            </h1>
+            <p class="text-gray-300 text-lg sm:text-xl font-light max-w-md mb-8">
+                "You can perform reliable currency exchanges at Hope. For all those living with hope, our HOPE Motix is that very hope itself."
+            </p>
+            <div class="space-y-4">
+                <button class="w-full bg-motix text-gray-900 btn" onclick="showPage('booking-page')">
+                    Buy Now &rarr;
+                </button>
+                <button class="w-full bg-gray-700 text-white btn">
+                    Rule & Tips
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Services Page -->
+    <div id="services-page" class="page inactive-page">
+        <div class="mt-12">
+            <h2 class="text-3xl sm:text-4xl font-extrabold leading-tight mb-4">
+                Services Summary
+            </h2>
+            <p class="text-gray-300 text-md sm:text-lg mb-8">
+                Quick overview of exchange rates, warnings, and guidelines.
+                <a href="#" class="text-motix ml-2">View full services &rarr;</a>
+            </p>
+
+            <div class="bg-gray-800 rounded-xl p-6 mb-8 shadow-lg">
+                <h3 class="text-xl sm:text-2xl font-extrabold mb-4">Exchange Rates</h3>
+                <p class="text-gray-400 mb-4">Current rates for buying motix (rates change daily)</p>
+                <div class="grid grid-cols-2 gap-4 text-center">
+                    <div>
+                        <p class="text-2xl font-bold">$16</p>
+                        <p class="text-sm text-gray-400">(53,600 MMK)</p>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <svg class="w-6 h-6 text-motix mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                        <p class="text-2xl font-bold">$128</p>
+                        <p class="text-sm text-gray-400">(428,800 MMK)</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold">$32</p>
+                        <p class="text-sm text-gray-400">(107,200 MMK)</p>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <svg class="w-6 h-6 text-motix mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                        <p class="text-2xl font-bold">$256</p>
+                        <p class="text-sm text-gray-400">(857,600 MMK)</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold">$100</p>
+                        <p class="text-sm text-gray-400">(335,000 MMK)</p>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <svg class="w-6 h-6 text-motix mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                        <p class="text-2xl font-bold">$800</p>
+                        <p class="text-sm text-gray-400">(2,680,000 MMK)</p>
+                    </div>
+                </div>
+                <a href="#" class="text-motix mt-4 block text-center">View all rates &rarr;</a>
+            </div>
+
+            <div class="bg-gray-800 rounded-xl p-6 shadow-lg">
+                <h3 class="text-xl sm:text-2xl font-extrabold mb-4">Quick Guidelines</h3>
+                <ul class="space-y-2 text-gray-300">
+                    <li class="flex items-center"><svg class="w-5 h-5 text-motix mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Best practices for safe usage</li>
+                    <li class="flex items-center"><svg class="w-5 h-5 text-motix mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Keep account information secure</li>
+                    <li class="flex items-center"><svg class="w-5 h-5 text-motix mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Check rates before transactions</li>
+                    <li class="flex items-center"><svg class="w-5 h-5 text-motix mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Follow all safety protocols</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Page -->
+    <div id="booking-page" class="page inactive-page">
+        <h2 class="text-3xl sm:text-4xl font-extrabold leading-tight mb-8">
+            Buy Motix Payment
+        </h2>
+        <p class="text-gray-300 text-lg sm:text-xl font-light mb-12">
+            Ready to elevate your event with professional sound and lighting? Use our simple booking process to secure your date.
+        </p>
+
+        <!-- Step-by-step process -->
+        <div class="space-y-6">
+            <div class="bg-gray-800 rounded-xl p-6 shadow-lg">
+                <h3 class="text-xl sm:text-2xl font-extrabold mb-2">Select Exchange Rate</h3>
+                <p class="text-gray-400">Check and select your preferred exchange rate from our available options.</p>
+            </div>
+            <div class="bg-gray-800 rounded-xl p-6 shadow-lg">
+                <h3 class="text-xl sm:text-2xl font-extrabold mb-2">Enter Details</h3>
+                <p class="text-gray-400">Input recipient's phone number, transaction ID, and upload payment proof.</p>
+            </div>
+            <div class="bg-gray-800 rounded-xl p-6 shadow-lg">
+                <h3 class="text-xl sm:text-2xl font-extrabold mb-2">Review & Confirm</h3>
+                <p class="text-gray-400">Review your transaction details and confirm the exchange.</p>
+            </div>
+            <div class="bg-gray-800 rounded-xl p-6 shadow-lg">
+                <h3 class="text-xl sm:text-2xl font-extrabold mb-2">Complete Transaction</h3>
+                <p class="text-gray-400">Receive confirmation and await deposit within 24 hours.</p>
+            </div>
+        </div>
+
+        <!-- Section for choosing amount -->
+        <div class="mt-12">
+            <h3 class="text-3xl sm:text-4xl font-extrabold leading-tight mb-8">Choose How Much Money</h3>
+            <p class="text-gray-300 text-lg sm:text-xl font-light mb-8">Select the amount you want to pay and see the bonus you'll receive</p>
+            <div class="space-y-4">
+                <div class="bg-gray-800 rounded-xl p-6 text-center shadow-lg transition-all duration-200 hover:scale-105 cursor-pointer" onclick="showPaymentForm('$100', '335,000 MMK', '$800', '2,680,000 MMK')">
+                    <p class="text-2xl sm:text-3xl font-bold">$100</p>
+                    <p class="text-sm text-gray-400 mb-2">(335,000 MMK)</p>
+                    <svg class="w-8 h-8 mx-auto text-motix" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    <p class="text-2xl sm:text-3xl font-bold mt-2">$800</p>
+                    <p class="text-sm text-gray-400">(2,680,000 MMK)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Page -->
+    <div id="payment-page" class="page inactive-page">
+        <div class="flex flex-col items-center text-center mt-12">
+            <h2 class="text-3xl sm:text-4xl font-extrabold leading-tight mb-4">Payment</h2>
+            <p class="text-gray-300 text-lg sm:text-xl font-light mb-8">To pay, please scan the QR code below.</p>
+
+            <!-- QR Code and Payment Info (Placeholder) -->
+            <div class="bg-white rounded-lg p-4 shadow-lg mb-8">
+                <img src="https://placehold.co/300x300/e5e7eb/374151?text=QR+Code" alt="KBZ Pay QR Code" class="rounded-lg w-full max-w-xs mx-auto">
+                <div class="mt-4 text-gray-800 font-bold">KBZ Pay</div>
+                <div class="text-gray-700">Daw Nyo Nyo Win</div>
+                <p class="text-sm text-gray-500 mt-2">This QR code is for KBZ Pay only. Please be sure to use the KBZ Pay app for your payment.</p>
+            </div>
+            
+            <div class="bg-gray-800 rounded-xl p-4 w-full text-center shadow-lg mb-8">
+                <p class="text-gray-400 text-sm">Selected Amount:</p>
+                <p id="selected-amount" class="text-2xl font-bold mt-1"></p>
+            </div>
+
+            <button class="w-full bg-motix text-gray-900 btn" onclick="showPage('form-page')">Enter Transaction Details</button>
+        </div>
+    </div>
+
+    <!-- Form Page -->
+    <div id="form-page" class="page inactive-page">
+        <h2 class="text-3xl sm:text-4xl font-extrabold leading-tight mb-4">Enter Transaction Details</h2>
+        <p class="text-gray-300 text-lg sm:text-xl font-light mb-8">Provide recipient information and payment proof</p>
+
+        <form id="transaction-form" class="space-y-6">
+            <div class="bg-gray-800 rounded-xl p-6 shadow-lg">
+                <div class="space-y-4">
+                    <div>
+                        <label for="email" class="block text-gray-400 text-sm font-bold mb-1">Email Address</label>
+                        <input type="email" id="email" name="email" placeholder="your@email.com" class="w-full bg-gray-700 text-white p-3 rounded-lg focus:outline-none focus:ring focus:ring-motix">
+                        <p id="email-error" class="text-red-500 text-sm hidden">Invalid Email</p>
+                    </div>
+                    <div>
+                        <label for="payment-name" class="block text-gray-400 text-sm font-bold mb-1">Payment Name</label>
+                        <input type="text" id="payment-name" name="payment-name" placeholder="account name" class="w-full bg-gray-700 text-white p-3 rounded-lg focus:outline-none focus:ring focus:ring-motix">
+                    </div>
+                    <div>
+                        <label for="phone-number" class="block text-gray-400 text-sm font-bold mb-1">Recipient Phone Number</label>
+                        <input type="tel" id="phone-number" name="phone-number" placeholder="+959 - 123 456 789" class="w-full bg-gray-700 text-white p-3 rounded-lg focus:outline-none focus:ring focus:ring-motix">
+                    </div>
+                    <div>
+                        <label for="transaction-id" class="block text-gray-400 text-sm font-bold mb-1">Transaction ID</label>
+                        <input type="text" id="transaction-id" name="transaction-id" placeholder="Enter transaction ID" class="w-full bg-gray-700 text-white p-3 rounded-lg focus:outline-none focus:ring focus:ring-motix">
+                    </div>
+                    <div>
+                        <label for="payment-proof" class="block text-gray-400 text-sm font-bold mb-1">Upload Payment Proof</label>
+                        <div class="bg-gray-700 rounded-lg p-6 text-center border-dashed border-2 border-gray-600 cursor-pointer">
+                            <svg class="w-12 h-12 mx-auto mb-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                            <p class="text-sm text-gray-400">Click to upload</p>
+                            <p class="text-xs text-gray-500">PNG, JPG up to 10MB</p>
+                            <input type="file" id="payment-proof" name="payment-proof" class="hidden" accept="image/png, image/jpeg">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-orange-800 rounded-xl p-4 shadow-lg text-sm text-yellow-100">
+                <p class="font-bold mb-2">Confirm Transaction</p>
+                <p>After you have filled in all the information and clicked "Confirm Transaction," please check everything one more time to be sure. We cannot be held responsible for any incorrect information. If something is wrong and you want to fix it, you can contact us at <a href="mailto:firsthopeOOO1@gmail.com" class="underline">firsthopeOOO1@gmail.com</a>.</p>
+            </div>
+
+            <button type="submit" class="w-full bg-motix text-gray-900 btn">Confirm Transaction</button>
+        </form>
+
+        <div id="confirmation-message" class="hidden fixed bottom-4 left-1/2 -translate-x-1/2 bg-green-600 text-white p-4 rounded-lg shadow-lg z-50 text-center">
+            <p>Transaction submitted successfully!</p>
+        </div>
+    </div>
+</main>
+
+<script>
+    const pages = document.querySelectorAll('.page');
+    const navOverlay = document.getElementById('nav-overlay');
+    const hamburgerMenu = document.getElementById('hamburger-menu');
+    const closeMenu = document.getElementById('close-menu');
+    const transactionForm = document.getElementById('transaction-form');
+    const emailInput = document.getElementById('email');
+    const emailError = document.getElementById('email-error');
+    const paymentProofInput = document.getElementById('payment-proof');
+    const selectedAmountDisplay = document.getElementById(
